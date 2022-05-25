@@ -1,0 +1,21 @@
+{
+  "name": "untitled",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc && node dist/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-hue-api": "^5.0.0-beta.13",
+    "ring-client-api": "^11.0.2",
+    "typescript": "^4.7.2"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.3"
+  }
+}

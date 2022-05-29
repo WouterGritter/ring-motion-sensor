@@ -16,7 +16,8 @@ import {discovery, v3, api} from "node-hue-api";
     let hueHost = hueSearchResults[0].ipaddress;
     console.log(`Found hue hub with IP ${hueHost}. Connecting..`);
 
-    const hueHub = await v3.api.createLocal(hueHost)
+    const hueHub = await v3.api
+        .createLocal(hueHost)
         .connect(process.env.HUE_USERNAME, process.env.HUE_CLIENT_KEY);
     console.log('Connected to hue hub.');
 
@@ -31,15 +32,37 @@ import {discovery, v3, api} from "node-hue-api";
 
     console.log(`Found camera ${camera.name}. Now listening to events!`);
 
-    camera.onNewNotification.subscribe(notification => {
+    let turnOffTimeout: NodeJS.Timeout | undefined = undefined;
+
+    const lightNames = process.env.HUE_LIGHTS.split(',');
+    const lengthMs = parseInt(process.env.LIGHT_ON_TIME) * 1000;
+
+    camera.onNewNotification.subscribe(async (notification) => {
         if (notification.subtype === 'human') {
             console.log('Human detected!');
 
-            turnLightsOnTemporarily(
-                hueHub,
-                process.env.HUE_LIGHTS.split(','),
-                parseInt(process.env.LIGHT_ON_TIME) * 1000,
-            );
+            if(await isLightsOn(hueHub, lightNames)) {
+                if(turnOffTimeout === undefined) {
+                    console.log('Lights are already turned on manually. Doing nothing.');
+                    return;
+                }else{
+                    console.log('Lights are already turned on automatically. Canceling old turn-off timer.');
+
+                    clearTimeout(turnOffTimeout);
+                    turnOffTimeout = undefined;
+                }
+            }else{
+                await setLightsOn(hueHub, lightNames, true);
+                console.log(`Turned lights on.`);
+            }
+
+            console.log(`Started timer to turn off lights in ${lengthMs / 1000} seconds.`);
+            turnOffTimeout = setTimeout(async () => {
+                await setLightsOn(hueHub, lightNames, false);
+                console.log('Turned lights off.');
+
+                turnOffTimeout = undefined;
+            }, lengthMs);
         }
     });
 })();
@@ -68,19 +91,4 @@ async function isLightsOn(hueHub: any, lightNames: string[]) {
     }
 
     return false;
-}
-
-async function turnLightsOnTemporarily(hueHub: any, lightNames: string[], lengthMs: number) {
-    if(await isLightsOn(hueHub, lightNames)) {
-        console.log('Lights are already on. Doing nothing.');
-        return;
-    }
-
-    await setLightsOn(hueHub, lightNames, true);
-    console.log(`Turned lights on. Turning them off in ${lengthMs / 1000} seconds.`);
-
-    setTimeout(async () => {
-        await setLightsOn(hueHub, lightNames, false)
-        console.log('Turned lights off.');
-    }, lengthMs);
 }

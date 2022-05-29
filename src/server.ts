@@ -75,7 +75,8 @@ async function setLightsOn(hueHub: any, lightNames: string[], on: boolean) {
         const state = new v3.lightStates.LightState()
             .on(on);
 
-        hueHub.lights.setLightState(light.id, state);
+        hueHub.lights.setLightState(light.id, state)
+            .catch(console.error);
     }
 }
 

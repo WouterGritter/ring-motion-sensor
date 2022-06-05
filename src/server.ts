@@ -1,5 +1,7 @@
+import 'dotenv/config'
 import {RingApi} from "ring-client-api";
 import {discovery, v3, api} from "node-hue-api";
+import {getSunriseSunsetInfo} from "sunrise-sunset-api";
 
 (async () => {
     console.log('Searching for a hue hub..');
@@ -40,6 +42,11 @@ import {discovery, v3, api} from "node-hue-api";
     camera.onNewNotification.subscribe(async (notification) => {
         if (notification.subtype === 'human') {
             console.log('Human detected!');
+
+            if(!await isSunDown()) {
+                console.log('The sun is still up. Doing nothing.');
+                return;
+            }
 
             if(await isLightsOn(hueHub, lightNames)) {
                 if(turnOffTimeout === undefined) {
@@ -92,4 +99,18 @@ async function isLightsOn(hueHub: any, lightNames: string[]) {
     }
 
     return false;
+}
+
+async function isSunDown() {
+    const response = await getSunriseSunsetInfo({
+        latitude: parseFloat(process.env.LATITUDE),
+        longitude: parseFloat(process.env.LONGITUDE),
+        formatted: false,
+    });
+
+    let sunrise = new Date(response.sunrise);
+    let sunset = new Date(response.sunset);
+    let now = new Date();
+
+    return !(now > sunrise && now < sunset);
 }

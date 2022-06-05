@@ -2,10 +2,6 @@ import {RingApi} from "ring-client-api";
 import {discovery, v3, api} from "node-hue-api";
 
 (async () => {
-    console.log('Connecting to ring api..');
-    const ringApi = new RingApi({refreshToken: process.env.RING_REFRESH_TOKEN});
-    console.log('Connected to ring api.');
-
     console.log('Searching for a hue hub..');
     let hueSearchResults = await discovery.upnpSearch();
     if (hueSearchResults.length === 0) {
@@ -20,6 +16,10 @@ import {discovery, v3, api} from "node-hue-api";
         .createLocal(hueHost)
         .connect(process.env.HUE_USERNAME, process.env.HUE_CLIENT_KEY);
     console.log('Connected to hue hub.');
+
+    console.log('Connecting to ring api..');
+    const ringApi = new RingApi({refreshToken: process.env.RING_REFRESH_TOKEN});
+    console.log('Connected to ring api.');
 
     let cameras = await ringApi.getCameras();
     console.log(`Found ${cameras.length} camera(s).`);

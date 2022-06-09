@@ -4,6 +4,11 @@ import {discovery, v3, api} from "node-hue-api";
 import {getSunriseSunsetInfo} from "sunrise-sunset-api";
 
 (async () => {
+    console.log('Hello, world!');
+    console.log(`Hue username: ${process.env.HUE_USERNAME.substring(0, 8)}...`);
+    console.log(`Hue client key: ${process.env.HUE_CLIENT_KEY.substring(0, 8)}...`);
+    console.log(`Ring refresh token: ${process.env.RING_REFRESH_TOKEN.substring(0, 8)}...`);
+
     console.log('Searching for a hue hub..');
     let hueSearchResults = await discovery.upnpSearch();
     if (hueSearchResults.length === 0) {

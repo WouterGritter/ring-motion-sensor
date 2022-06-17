@@ -3,6 +3,7 @@ services:
   ring-motion-sensor:
     build: .
     network_mode: host # Required for hue hub connectivity
+    restart: unless-stopped
     environment:
       HUE_USERNAME: $HUE_USERNAME
       HUE_CLIENT_KEY: $HUE_CLIENT_KEY
